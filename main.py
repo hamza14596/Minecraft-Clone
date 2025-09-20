@@ -1,79 +1,43 @@
-import pyglet
-import ctypes
+from ursina import *
 
-pyglet.options['shadow_window'] = False
-pyglet.options['debug_gl'] = False
-
-import pyglet.gl as gl
-
-vertex_positions = [
-    -0.5, 0.5, 1.0,
-    -0.5, -0.5, 1.0,
-    0.5, -0.5, 1.0,
-    0.5, 0.5, 1.0
-]
-
-indices = [
-    0, 1, 2,
-    0, 2, 3,
-]
-
-class Window(pyglet.window.Window):
-    def __init__(self, **args):
-        super(Window, self).__init__(**args)
-
-        self.vao = gl.GLuint(0)
-        gl.glGenVertexArrays(1, ctypes.byref(self.vao))
-        gl.glBindVertexArray(self.vao)
-
-        self.vbo = gl.GLuint(0)
-        gl.glGenBuffers(1, ctypes.byref(self.vbo))
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-
-        gl.glBufferData(
-            gl.GL_ARRAY_BUFFER,
-            ctypes.sizeof(gl.GLfloat * len(vertex_positions)),
-            (gl.GLfloat * len(vertex_positions))(*vertex_positions),
-            gl.GL_STATIC_DRAW
-        )
-
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-        gl.glEnableVertexAttribArray(0)
-
-        self.ibo = gl.GLuint(0)
-        gl.glGenBuffers(1, ctypes.byref(self.ibo))
-        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
-
-        gl.glBufferData(
-            gl.GL_ELEMENT_ARRAY_BUFFER,
-            ctypes.sizeof(gl.GLuint * len(indices)),
-            (gl.GLuint * len(indices))(*indices),
-            gl.GL_STATIC_DRAW
-        )
-
-    def on_draw(self):
-        gl.glClearColor(1.0, 0.75, 0.796, 1.0)   
-        self.clear()
-
-        gl.glDrawElements(
-            gl.GL_TRIANGLES,
-            len(indices),
-            gl.GL_UNSIGNED_INT,
-            None
-        )
-
-    def on_resize(self, width, height):
-        print(f"Resize {width} * {height}")
-        gl.glViewport(0, 0, width, height)
-
-class Game:
+class Test_cube(Entity):
     def __init__(self):
-        self.config = gl.Config(major_version=3)
-        self.window = Window(config=self.config, width=800, height=600, caption='Minecraft', resizable=True, vsync=False)
+        super().__init__(
+            model = 'cube',
+            color = color.white,
+            texture = 'white_cube',
+            rotation = Vec3(45,45,45))   
 
-    def run(self):
-        pyglet.app.run()
+class Test_button(Button):
+    def __init__(self):
+        super().__init__(
+            parent = scene,
+            model = 'cube',
+            texture = 'brick',
+            color = color.blue,
+            highlight_color = color.red,
+            pressed_color = color.lime,)
+        
+    def input(self,key):
+        if self.hovered:
+            if key == 'left mouse down':
+                print('button pressed')
+                self.position = (0,0,0)
+            if key == 'left mouse up':
+                self.position = (0,0,0.2)
 
-if __name__ == '__main__':
-    game = Game()
-    game.run()
+        
+
+def update():
+    if held_keys['a']:
+        test_square.x -= 4 * time.dt
+
+app = Ursina()
+
+test_square = Entity(model = 'quad', color = color.red, scale= (1,4), position = (5,4))
+sans = Entity(model = 'quad', texture = ('assets/sans.png'))
+
+
+test_button = Test_button()
+
+app.run()
